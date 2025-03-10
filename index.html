@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mall Forum</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mall Forum</h1>
+        <div class="post-section">
+            <textarea id="postInput" placeholder="What are you looking for?"></textarea>
+            <button onclick="addPost()">Post</button>
+        </div>
+        <div id="postsContainer"></div>
+    </div>
+
+    <script>
+        function addPost() {
+            const postText = document.getElementById('postInput').value;
+            if (postText.trim() === '') return;
+            const postContainer = document.getElementById('postsContainer');
+            const postDiv = document.createElement('div');
+            postDiv.classList.add('post');
+            postDiv.innerHTML = `<p>${postText}</p><div class="responses"></div><textarea class="responseInput" placeholder="Respond with shop details..."></textarea><button onclick="addResponse(this)">Respond</button>`;
+            postContainer.prepend(postDiv);
+            document.getElementById('postInput').value = '';
+        }
+
+        function addResponse(button) {
+            const responseInput = button.previousElementSibling;
+            const responseText = responseInput.value;
+            if (responseText.trim() === '') return;
+            const responsesDiv = button.parentElement.querySelector('.responses');
+            const responseDiv = document.createElement('div');
+            responseDiv.classList.add('response');
+            responseDiv.innerHTML = `<p>${responseText}</p>`;
+            responsesDiv.appendChild(responseDiv);
+            responseInput.value = '';
+        }
+    </script>
+</body>
+</html>
