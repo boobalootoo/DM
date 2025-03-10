@@ -5,6 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mall Forum</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.8) 20%, rgba(150, 0, 0, 1) 50%, rgba(80, 0, 0, 1) 80%);
+            background-size: 100px 100px;
+            animation: shimmer 5s infinite linear;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 50px auto;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .post-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: none;
+        }
+        button {
+            background: #b30000;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #ff0000;
+        }
+        .post {
+            background: white;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .responses {
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #b30000;
+        }
+        .response {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,6 +81,62 @@
         </div>
         <div id="postsContainer"></div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwhGSe1clK-H4h82tappeY5HS8HI6D7eNRuvWGwpCtU1uRlo3gQpU5E46XcgmtuGWWI/exec";
+
+        function addPost() {
+            const postText = document.getElementById('postInput').value;
+            if (postText.trim() === '') return;
+
+            fetch(`${GAS_URL}?action=addPost&postText=${encodeURIComponent(postText)}`)
+                .then(() => loadData());
+
+            document.getElementById('postInput').value = '';
+        }
+
+        function addResponse(button, postId) {
+            const responseInput = button.previousElementSibling;
+            const responseText = responseInput.value;
+            if (responseText.trim() === '') return;
+
+            fetch(`${GAS_URL}?action=addResponse&postId=${postId}&responseText=${encodeURIComponent(responseText)}`)
+                .then(() => loadData());
+
+            responseInput.value = '';
+        }
+
+        function loadData() {
+            fetch(`${GAS_URL}?action=getPosts`)
+                .then(response => response.json())
+                .then(posts => {
+                    const postsContainer = document.getElementById('postsContainer');
+                    postsContainer.innerHTML = '';
+
+                    posts.forEach(post => {
+                        const postDiv = document.createElement('div');
+                        postDiv.classList.add('post');
+                        postDiv.innerHTML = `
+                            <p><strong>${post.text}</strong></p>
+                            <div class="responses"></div>
+                            <textarea class="responseInput" placeholder="Respond with shop details..."></textarea>
+                            <button onclick="addResponse(this, '${post.id}')">Respond</button>
+                        `;
+                        const responsesDiv = postDiv.querySelector('.responses');
+
+                        post.responses.forEach(responseText => {
+                            const responseDiv = document.createElement('div');
+                            responseDiv.classList.add('response');
+                            responseDiv.innerHTML = `<p>${responseText}</p>`;
+                            responsesDiv.appendChild(responseDiv);
+                        });
+
+                        postsContainer.appendChild(postDiv);
+                    });
+                });
+        }
+
+        window.onload = loadData;
+    </script>
 </body>
 </html>
